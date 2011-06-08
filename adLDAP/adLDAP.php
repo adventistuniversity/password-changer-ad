@@ -981,7 +981,7 @@ class adLDAP {
         $sr=ldap_search($this->_conn, $this->_base_dn /*'DC=STUDENTS,DC=FHCHS,DC=EDU'*/, $filter/*'samaccountname=student_test'*/,$fields);
 	
         $entries = ldap_get_entries($this->_conn, $sr);
-        
+
         if (isset($entries[0])) {
             if ($entries[0]['count'] >= 1) {
                 if (in_array("memberof", $fields)) {
@@ -1180,14 +1180,15 @@ class adLDAP {
         if (!$this->_use_ssl && !$this->_use_tls){ 
             throw new adLDAPException('SSL must be configured on your webserver and enabled in the class to set passwords.');
         }
-        
+	
         $user_dn=$this->user_dn($username,$isGUID);
         if ($user_dn===false){ return (false); }
-                
-        $add=array();
-        $add["unicodePwd"][0]=$this->encode_password($password);
         
+	$add=array();
+        $add["unicodePwd"][0]=$this->encode_password($password);
+	
         $result=ldap_mod_replace($this->_conn,$user_dn,$add);
+
         if ($result==false){ return (false); }
         
         return (true);
@@ -1330,6 +1331,7 @@ class adLDAP {
         
         // Search the directory for their information
         $info=@$this->contact_info($distinguishedname,array("memberof","primarygroupid"));
+
         $groups=$this->nice_names($info[0]["memberof"]); //presuming the entry returned is our contact
 
         if ($recursive === true){
@@ -1874,6 +1876,7 @@ class adLDAP {
         if ($mailnickname !== NULL) {
             // Find the dn of the user
             $user=$this->contact_info($distinguishedname,array("cn","displayname"));
+
             if ($user[0]["displayname"]===NULL){ return (false); }
             $mailnickname = $user[0]['displayname'][0];
         }
@@ -2139,7 +2142,9 @@ class adLDAP {
         $sr=ldap_search($this->_conn,$this->_base_dn,$filter,$fields);
         $entries = ldap_get_entries($this->_conn, $sr);
 
-        return $entries[0]['distinguishedname'][0];
+	if(isset($entries[0]['distinguishedname'][0]))
+		return $entries[0]['distinguishedname'][0];
+	else return FALSE;	
      }
      
     /**
